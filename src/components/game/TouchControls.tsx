@@ -1,11 +1,15 @@
 "use client";
 
 import { useGameStore } from "@/stores/useGameStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export function TouchControls() {
     const setTouchControls = useGameStore((state) => state.setTouchControls);
     const [isMobile, setIsMobile] = useState(false);
+    const [joystickActive, setJoystickActive] = useState(false);
+    const [joystickPosition, setJoystickPosition] = useState({ x: 0, y: 0 });
+    const joystickStartPos = useRef({ x: 0, y: 0 });
+    const joystickTouchId = useRef<number | null>(null);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -17,14 +21,68 @@ export function TouchControls() {
 
     if (!isMobile) return null;
 
-    const handleTouchStart = (action: "left" | "right" | "jump") => (e: React.TouchEvent) => {
-        e.preventDefault(); // Prevent scrolling/zooming
-        setTouchControls({ [action]: true });
+    // Virtual Joystick handlers
+    const handleJoystickStart = (e: React.TouchEvent) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        joystickTouchId.current = touch.identifier;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        joystickStartPos.current = { x: centerX, y: centerY };
+        setJoystickActive(true);
     };
 
-    const handleTouchEnd = (action: "left" | "right" | "jump") => (e: React.TouchEvent) => {
+    const handleJoystickMove = (e: React.TouchEvent) => {
         e.preventDefault();
-        setTouchControls({ [action]: false });
+        if (!joystickActive || joystickTouchId.current === null) return;
+
+        const touch = Array.from(e.touches).find(
+            (t) => t.identifier === joystickTouchId.current
+        );
+        if (!touch) return;
+
+        const deltaX = touch.clientX - joystickStartPos.current.x;
+        const deltaY = touch.clientY - joystickStartPos.current.y;
+
+        // Limit joystick movement to a circle
+        const maxDistance = 50;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const limitedX = distance > maxDistance ? (deltaX / distance) * maxDistance : deltaX;
+        const limitedY = distance > maxDistance ? (deltaY / distance) * maxDistance : deltaY;
+
+        setJoystickPosition({ x: limitedX, y: limitedY });
+
+        // Determine direction based on joystick position
+        const threshold = 15; // Minimum movement to register
+        const left = limitedX < -threshold;
+        const right = limitedX > threshold;
+
+        setTouchControls({ left, right });
+    };
+
+    const handleJoystickEnd = (e: React.TouchEvent) => {
+        e.preventDefault();
+        const touchEnded = Array.from(e.changedTouches).some(
+            (t) => t.identifier === joystickTouchId.current
+        );
+        if (!touchEnded) return;
+
+        setJoystickActive(false);
+        setJoystickPosition({ x: 0, y: 0 });
+        joystickTouchId.current = null;
+        setTouchControls({ left: false, right: false });
+    };
+
+    // Right side jump handler
+    const handleJumpStart = (e: React.TouchEvent) => {
+        e.preventDefault();
+        setTouchControls({ jump: true });
+    };
+
+    const handleJumpEnd = (e: React.TouchEvent) => {
+        e.preventDefault();
+        setTouchControls({ jump: false });
     };
 
     return (
@@ -51,37 +109,52 @@ export function TouchControls() {
 
             {/* Touch Controls - Visible only in landscape */}
             <div className="landscape:block hidden w-full h-full">
-                {/* Left Control (Move) */}
-                <div className="absolute bottom-8 left-8 flex gap-4 pointer-events-auto">
-                    <button
-                        className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full active:bg-white/40 border-2 border-white/30 flex items-center justify-center transition-colors"
-                        onTouchStart={handleTouchStart("left")}
-                        onTouchEnd={handleTouchEnd("left")}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-white">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                        </svg>
-                    </button>
-                    <button
-                        className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full active:bg-white/40 border-2 border-white/30 flex items-center justify-center transition-colors"
-                        onTouchStart={handleTouchStart("right")}
-                        onTouchEnd={handleTouchEnd("right")}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-white">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
-                    </button>
+                {/* Virtual Joystick - Left Side */}
+                <div
+                    className="absolute bottom-8 left-8 w-32 h-32 pointer-events-auto"
+                    onTouchStart={handleJoystickStart}
+                    onTouchMove={handleJoystickMove}
+                    onTouchEnd={handleJoystickEnd}
+                    onTouchCancel={handleJoystickEnd}
+                >
+                    {/* Joystick Base */}
+                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-full border-2 border-white/20 flex items-center justify-center">
+                        {/* Joystick Stick */}
+                        <div
+                            className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-full border-2 border-white/50 transition-all"
+                            style={{
+                                transform: `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`,
+                                opacity: joystickActive ? 1 : 0.6,
+                            }}
+                        />
+                    </div>
                 </div>
 
-                {/* Right Control (Jump) */}
-                <div className="absolute bottom-8 right-8 pointer-events-auto">
-                    <button
-                        className="w-24 h-24 bg-red-500/30 backdrop-blur-sm rounded-full active:bg-red-500/50 border-2 border-white/30 flex items-center justify-center transition-colors"
-                        onTouchStart={handleTouchStart("jump")}
-                        onTouchEnd={handleTouchEnd("jump")}
-                    >
-                        <span className="text-white font-bold text-lg">JUMP</span>
-                    </button>
+                {/* Jump Area - Right Half of Screen */}
+                <div
+                    className="absolute top-0 right-0 bottom-0 w-1/2 pointer-events-auto"
+                    onTouchStart={handleJumpStart}
+                    onTouchEnd={handleJumpEnd}
+                    onTouchCancel={handleJumpEnd}
+                >
+                    {/* Visual indicator in bottom right corner */}
+                    <div className="absolute bottom-8 right-8 pointer-events-none">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="w-20 h-20 bg-red-500/20 backdrop-blur-sm rounded-full border-2 border-white/30 flex items-center justify-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-10 h-10 text-white"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                                </svg>
+                            </div>
+                            <span className="text-white text-xs font-bold opacity-70">TAP TO JUMP</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

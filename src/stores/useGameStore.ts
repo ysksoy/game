@@ -20,6 +20,10 @@ interface GameState {
     setGameStatus: (status: 'ready' | 'playing' | 'cleared' | 'failed') => void;
     timeRemaining: number;
     setTimeRemaining: (time: number) => void;
+
+    // Mobile Touch Controls
+    touchControls: { left: boolean; right: boolean; jump: boolean };
+    setTouchControls: (controls: Partial<{ left: boolean; right: boolean; jump: boolean }>) => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -46,4 +50,10 @@ export const useGameStore = create<GameState>((set) => ({
     })),
     setGliderBody: (body) => set({ gliderBody: body }),
     setGliderRunning: (status) => set({ isGliderRunning: status }),
+
+    touchControls: { left: false, right: false, jump: false },
+    setTouchControls: (controls) =>
+        set((state) => ({
+            touchControls: { ...state.touchControls, ...controls },
+        })),
 }));

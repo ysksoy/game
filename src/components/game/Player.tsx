@@ -59,6 +59,12 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
         // Update cooldown
         if (attachCooldown.current > 0) attachCooldown.current -= delta;
 
+        // Combine Keyboard and Touch Controls
+        const touch = useGameStore.getState().touchControls;
+        const inputLeft = left || touch.left;
+        const inputRight = right || touch.right;
+        const inputJump = jump || touch.jump;
+
         // Glider Attachment Logic (only when playing)
         if (gliderBody && canMove) {
             try {
@@ -74,7 +80,7 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
                     state.camera.lookAt(gliderPos.x, 4, 0);
 
                     // Jump to Detach
-                    if (jump) {
+                    if (inputJump) {
                         setHanging(false);
                         attachCooldown.current = 1.0;
 
@@ -119,11 +125,11 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
         if (canMove) {
             let impulseX = 0;
 
-            if (right) {
+            if (inputRight) {
                 impulseX += ACCELERATION;
                 if (playerRef.current) playerRef.current.rotation.y = 0; // Face right
             }
-            if (left) {
+            if (inputLeft) {
                 impulseX -= ACCELERATION;
                 if (playerRef.current) playerRef.current.rotation.y = Math.PI; // Face left
             }
@@ -141,14 +147,14 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
             }
 
             // Jump Logic (Double Jump)
-            if (jump && !prevJump.current) {
+            if (inputJump && !prevJump.current) {
                 if (jumpCount.current < 2) {
                     rigidBody.current.setLinvel({ x: vel.x, y: 0, z: 0 }, true);
                     rigidBody.current.applyImpulse({ x: 0, y: JUMP_FORCE * 1.5, z: 0 }, true);
                     jumpCount.current++;
                 }
             }
-            prevJump.current = jump;
+            prevJump.current = inputJump;
         } else {
             // When not playing, apply drag to slow down any existing movement
             rigidBody.current.setLinvel({ x: vel.x * 0.9, y: vel.y, z: 0 }, true);

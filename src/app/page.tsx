@@ -8,6 +8,7 @@ import { Player } from "@/components/game/Player";
 import { Level } from "@/components/game/Level";
 import { TimerHUD } from "@/components/game/TimerHUD";
 import { StartButton } from "@/components/game/StartButton";
+import { TouchControls } from "@/components/game/TouchControls";
 
 export default function Home() {
   const [resetKey, setResetKey] = useState(0);
@@ -67,6 +68,7 @@ export default function Home() {
           <p className="text-sm opacity-70">WASD to Move | Space to Jump</p>
         </div>
 
+        <TouchControls />
         {/* TimerHUD has z-[9999] but needs to be inside a container that doesn't hide it */}
         <TimerHUD />
         <StartButton />

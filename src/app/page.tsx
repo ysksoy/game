@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
-import { KeyboardControls, OrbitControls, Environment, Sky, SoftShadows } from "@react-three/drei";
+import { KeyboardControls, OrbitControls, Environment, Sky, SoftShadows, Loader } from "@react-three/drei";
 import { Suspense, useState } from "react";
 import { Player } from "@/components/game/Player";
 import { Level } from "@/components/game/Level";
@@ -70,6 +70,7 @@ export default function Home() {
         {/* TimerHUD has z-[9999] but needs to be inside a container that doesn't hide it */}
         <TimerHUD />
         <StartButton />
+        <Loader />
       </main>
     </>
   );

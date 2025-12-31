@@ -86,7 +86,7 @@ export function TouchControls() {
     };
 
     return (
-        <div className="absolute inset-0 z-[50] pointer-events-none select-none touch-none">
+        <div className="absolute inset-0 z-[50] pointer-events-none select-none">
             {/* Landscape Warning Overlay - Visible only in portrait */}
             <div className="portrait:flex hidden fixed inset-0 bg-black/90 z-[100] flex-col items-center justify-center text-white p-4 text-center pointer-events-auto">
                 <svg
@@ -112,6 +112,7 @@ export function TouchControls() {
                 {/* Virtual Joystick - Left Side */}
                 <div
                     className="absolute bottom-8 left-8 w-32 h-32 pointer-events-auto"
+                    style={{ touchAction: 'none' }}
                     onTouchStart={handleJoystickStart}
                     onTouchMove={handleJoystickMove}
                     onTouchEnd={handleJoystickEnd}
@@ -133,6 +134,7 @@ export function TouchControls() {
                 {/* Jump Area - Right Half of Screen */}
                 <div
                     className="absolute top-0 right-0 bottom-0 w-1/2 pointer-events-auto"
+                    style={{ touchAction: 'none' }}
                     onTouchStart={handleJumpStart}
                     onTouchEnd={handleJumpEnd}
                     onTouchCancel={handleJumpEnd}

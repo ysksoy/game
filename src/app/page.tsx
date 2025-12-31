@@ -14,6 +14,7 @@ export default function Home() {
   const [resetKey, setResetKey] = useState(0);
   const [cameraFov, setCameraFov] = useState(40);
   const [cameraDistance, setCameraDistance] = useState(15);
+  const [cameraY, setCameraY] = useState(2);
 
   // Adjust camera for mobile landscape mode
   useEffect(() => {
@@ -23,12 +24,14 @@ export default function Home() {
       // If aspect ratio is very wide (landscape mobile), increase FOV and zoom out
       if (aspectRatio > 1.5) {
         // Mobile landscape (e.g., 16:9 = 1.78, 18:9 = 2.0)
-        setCameraFov(60); // Wider field of view
-        setCameraDistance(18); // Pull camera back more
+        setCameraFov(65); // Wider field of view
+        setCameraDistance(20); // Pull camera back more
+        setCameraY(4); // Raise camera to center the view better
       } else {
         // Desktop or tablet
         setCameraFov(40);
         setCameraDistance(15);
+        setCameraY(2);
       }
     };
 
@@ -52,7 +55,7 @@ export default function Home() {
         <KeyboardControls map={keyboardMap}>
           <Canvas
             shadows
-            camera={{ position: [0, 2, cameraDistance], fov: cameraFov }}
+            camera={{ position: [0, cameraY, cameraDistance], fov: cameraFov }}
             dpr={[1, 2]} // Support high DPI
           >
             <fog attach="fog" args={["#bae6fd", 10, 500]} />

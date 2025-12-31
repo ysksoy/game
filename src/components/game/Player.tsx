@@ -118,11 +118,8 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
             cameraTargetX,
             0.1
         );
-        // Look above the player to position the character at the bottom of the screen
-        // On mobile landscape (wide aspect ratio), look even higher to show more vertical space
-        const aspectRatio = state.size.width / state.size.height;
-        const lookAtY = aspectRatio > 1.5 ? 6 : 4; // Look higher on mobile landscape
-        state.camera.lookAt(cameraTargetX, lookAtY, 0);
+        // Look at a point slightly above the player
+        state.camera.lookAt(cameraTargetX, translation.y + 2, 0);
 
         // Only allow movement when game is playing
         if (canMove) {

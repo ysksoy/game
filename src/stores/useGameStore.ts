@@ -24,6 +24,10 @@ interface GameState {
     // Mobile Touch Controls
     touchControls: { left: boolean; right: boolean; jump: boolean };
     setTouchControls: (controls: Partial<{ left: boolean; right: boolean; jump: boolean }>) => void;
+
+    // Player Selection
+    selectedPlayer: 'soy' | 'rin' | null;
+    setSelectedPlayer: (player: 'soy' | 'rin') => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -34,6 +38,7 @@ export const useGameStore = create<GameState>((set) => ({
     isGliderRunning: false,
     gameStatus: 'ready' as 'ready' | 'playing' | 'cleared' | 'failed',
     timeRemaining: 30,
+    selectedPlayer: null,
 
     incrementScore: (amount = 1) => set((state) => ({ score: state.score + amount })),
     setGameOver: (status) => set({ isGameOver: status }),
@@ -46,6 +51,7 @@ export const useGameStore = create<GameState>((set) => ({
         gameStatus: 'ready',
         timeRemaining: 30,
         isGliderRunning: false, // Reset glider
+        selectedPlayer: null, // Reset player selection
         version: state.version + 1,
     })),
     setGliderBody: (body) => set({ gliderBody: body }),
@@ -56,4 +62,6 @@ export const useGameStore = create<GameState>((set) => ({
         set((state) => ({
             touchControls: { ...state.touchControls, ...controls },
         })),
+
+    setSelectedPlayer: (player) => set({ selectedPlayer: player }),
 }));

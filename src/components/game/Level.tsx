@@ -10,9 +10,13 @@ import CryptoJS from "crypto-js";
 
 // ========================================
 // 暗号化されたギフトコード
-// scripts/encrypt-gift-code.js で生成した文字列をここに貼り付けてください
+// scripts/encrypt-gift-code-dual.js で生成した文字列をここに貼り付けてください
 // ========================================
-const ENCRYPTED_GIFT_CODE = "U2FsdGVkX18/LzMZdshz8ywcAqaFzALqnv6oPRxHgFzcQijHCOctgzn6g4NCzsJQ";
+// れお用のギフトコード（合言葉: あけましておめでとう）
+const ENCRYPTED_GIFT_CODE_SOY = "U2FsdGVkX1/1e+SW3vP1KaDaHaWCf5UpXDe1cYbBr/qg1ulBDLKCvHloP7QlnZN5";
+
+// かい用のギフトコード（合言葉: ことしもよろしくねーー）
+const ENCRYPTED_GIFT_CODE_RIN = "U2FsdGVkX19G04E4DENh4lSHABXADplHWEg0F0o3kHWN3xzRP2n6xabk6NLmXuwA";
 
 export function Level() {
     const setGliderBody = useGameStore((state) => state.setGliderBody);
@@ -40,15 +44,20 @@ export function Level() {
 
     // ゲームクリア時の処理：ギフトコードの復号と表示
     const gameStatus = useGameStore((state) => state.gameStatus);
+    const selectedPlayer = useGameStore((state) => state.selectedPlayer);
     const hasShownGiftCode = useRef(false);
 
     useEffect(() => {
         if (gameStatus === 'cleared' && !hasShownGiftCode.current) {
             hasShownGiftCode.current = true;
 
+            // 選択されたプレイヤーに応じて暗号化コードを選択
+            const encryptedCode = selectedPlayer === 'soy' ? ENCRYPTED_GIFT_CODE_SOY : ENCRYPTED_GIFT_CODE_RIN;
+            const playerName = selectedPlayer === 'soy' ? 'れお' : 'かい';
+
             // 少し遅延させてからプロンプトを表示（ゲームクリアの演出が見えるように）
             setTimeout(() => {
-                const passphrase = window.prompt('🎉 ゲームクリアおめでとうございます！\n\n合言葉を入力してください：');
+                const passphrase = window.prompt(`🎉 ${playerName}さん、ゲームクリアおめでとうございます！\n\n合言葉を入力してください：`);
 
                 if (passphrase === null) {
                     // キャンセルされた場合
@@ -62,11 +71,11 @@ export function Level() {
 
                 try {
                     // 復号を試みる
-                    const decrypted = CryptoJS.AES.decrypt(ENCRYPTED_GIFT_CODE, passphrase).toString(CryptoJS.enc.Utf8);
+                    const decrypted = CryptoJS.AES.decrypt(encryptedCode, passphrase).toString(CryptoJS.enc.Utf8);
 
                     if (decrypted && decrypted.length > 0) {
                         // 復号成功
-                        alert(`🎁 お年玉です！\n\nAmazonギフトコード：\n${decrypted}\n\nおめでとうございます！`);
+                        alert(`🎁 ${playerName}さんへのお年玉です！\n\nAmazonギフトコード：\n${decrypted}\n\nおめでとうございます！`);
                     } else {
                         // 復号失敗（空文字列）
                         alert('❌ 合言葉が違います。');
@@ -82,7 +91,7 @@ export function Level() {
         if (gameStatus === 'ready') {
             hasShownGiftCode.current = false;
         }
-    }, [gameStatus]);
+    }, [gameStatus, selectedPlayer]);
 
     // Define the S-shaped curve path
     // Memoize the curve so it's not recreated every render

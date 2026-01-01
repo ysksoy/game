@@ -42,3 +42,4 @@ next-env.d.ts
 
 # gift code encryption script (contains sensitive data)
 /scripts/encrypt-gift-code.js
+/scripts/encrypt-gift-code-dual.js

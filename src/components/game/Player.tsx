@@ -15,11 +15,10 @@ export function Player({ resetGame }: { resetGame?: () => void }) {
     const [, get] = useKeyboardControls();
     const playerRef = useRef<THREE.Group>(null);
 
-    // Randomly select character model
-    const [selectedModel] = useState(() => {
-        return Math.random() < 0.5 ? "/models/soy.glb" : "/models/rin.glb";
-    });
-    const { scene } = useGLTF(selectedModel);
+    // Get selected player from store
+    const selectedPlayer = useGameStore((state) => state.selectedPlayer);
+    const modelPath = selectedPlayer === 'soy' ? "/models/soy.glb" : "/models/rin.glb";
+    const { scene } = useGLTF(modelPath);
 
     // Constants
     const MOVEMENT_SPEED = 5;

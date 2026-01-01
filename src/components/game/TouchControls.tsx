@@ -154,7 +154,7 @@ export function TouchControls() {
             <div
                 style={{
                     position: 'absolute',
-                    bottom: 32,
+                    bottom: 80,
                     left: 32,
                     width: 128,
                     height: 128,
@@ -214,7 +214,7 @@ export function TouchControls() {
                 <div
                     style={{
                         position: 'absolute',
-                        bottom: 32,
+                        bottom: 80,
                         right: 32,
                         pointerEvents: 'none',
                         display: 'flex',

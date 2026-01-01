@@ -6,6 +6,13 @@ import { Float, useTexture, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { useGameStore } from "@/stores/useGameStore";
+import CryptoJS from "crypto-js";
+
+// ========================================
+// 暗号化されたギフトコード
+// scripts/encrypt-gift-code.js で生成した文字列をここに貼り付けてください
+// ========================================
+const ENCRYPTED_GIFT_CODE = "U2FsdGVkX18/LzMZdshz8ywcAqaFzALqnv6oPRxHgFzcQijHCOctgzn6g4NCzsJQ";
 
 export function Level() {
     const setGliderBody = useGameStore((state) => state.setGliderBody);
@@ -30,6 +37,52 @@ export function Level() {
             setGliderBody(gliderRef.current);
         }
     }, []);
+
+    // ゲームクリア時の処理：ギフトコードの復号と表示
+    const gameStatus = useGameStore((state) => state.gameStatus);
+    const hasShownGiftCode = useRef(false);
+
+    useEffect(() => {
+        if (gameStatus === 'cleared' && !hasShownGiftCode.current) {
+            hasShownGiftCode.current = true;
+
+            // 少し遅延させてからプロンプトを表示（ゲームクリアの演出が見えるように）
+            setTimeout(() => {
+                const passphrase = window.prompt('🎉 ゲームクリアおめでとうございます！\n\n合言葉を入力してください：');
+
+                if (passphrase === null) {
+                    // キャンセルされた場合
+                    return;
+                }
+
+                if (passphrase.trim() === '') {
+                    alert('合言葉が入力されていません。');
+                    return;
+                }
+
+                try {
+                    // 復号を試みる
+                    const decrypted = CryptoJS.AES.decrypt(ENCRYPTED_GIFT_CODE, passphrase).toString(CryptoJS.enc.Utf8);
+
+                    if (decrypted && decrypted.length > 0) {
+                        // 復号成功
+                        alert(`🎁 お年玉です！\n\nAmazonギフトコード：\n${decrypted}\n\nおめでとうございます！`);
+                    } else {
+                        // 復号失敗（空文字列）
+                        alert('❌ 合言葉が違います。');
+                    }
+                } catch (error) {
+                    // 復号エラー
+                    alert('❌ 合言葉が違います。');
+                }
+            }, 1000);
+        }
+
+        // ゲームがリスタートされたらフラグをリセット
+        if (gameStatus === 'ready') {
+            hasShownGiftCode.current = false;
+        }
+    }, [gameStatus]);
 
     // Define the S-shaped curve path
     // Memoize the curve so it's not recreated every render

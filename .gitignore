@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# gift code encryption script (contains sensitive data)
+/scripts/encrypt-gift-code.js

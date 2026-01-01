@@ -120,7 +120,7 @@ export function StartButton() {
                         e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(236, 72, 153, 0.6)';
                     }}
                 >
-                    🎀 かい
+                    ⚽ かい
                 </button>
             </div>
         </div>
